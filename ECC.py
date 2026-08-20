@@ -66,28 +66,129 @@ class Point:
             return self
 
         p = self.curve.p
-
-        # Case 1: P + (-P) = Infinity
+        # P + (-P) = Infinity
         if self.x == other.x and (self.y + other.y) % p == 0:
             return Point(self.curve, is_infinity=True)
 
-        # Case 2: Point Doubling (P + P)
+        # Standard Doubling Formula
         if self == other:
             slope = (3 * self.x**2 + self.curve.a) * pow(2 * self.y, -1, p) % p
-        # Case 3: Point Addition (P + Q where P != Q)
+        # Standard Addition Formula
         else:
             slope = (other.y - self.y) * pow(other.x - self.x, -1, p) % p
 
+        # Standard Coordinate Updates
         x3 = (slope**2 - self.x - other.x) % p
         y3 = (slope * (self.x - x3) - self.y) % p
 
         return Point(self.curve, x3, y3)
-    def __pow__(self, n: int):
+    def __mul__(self, n):
+        if n ==0:
+            return Point(self.curve, is_infinity=True)
+        if n ==1:
+            return self
         Q = self
-        R = Point(Q.curve, None, None)
-        while n> 0:
-            if n%2 ==1: R = Q +R
-            Q= Q+ Q 
-            n//=2
+        R = Point(self.curve, None,None)
+        while n >0:
+            if n%2 == 1: R = R+Q
+            Q = Q+Q
+            n //=2
         return R
+    def __rmul__(self,n):
+        return self.__mul__(n)
+class MontgomeryECC:
+    def __init__(self, A: int, B: int, p: int):
+        self.A = A
+        self.B = B
+        self.p = p
 
+    def is_on_curve(self, x: int, y: int) -> bool:
+        return (self.B * y**2 - (x**3 + self.A * x**2 + x)) % self.p == 0
+
+
+class Point:
+    def __init__(self, curve: MontgomeryECC, x: int = None, y: int = None, is_infinity: bool = False):
+        self.curve = curve
+        self.x = x
+        self.y = y
+        self.is_infinity = is_infinity or (x is None and y is None)
+
+    def __str__(self):
+        return "Point(Infinity)" if self.is_infinity else f"Point({self.x}, {self.y})"
+
+    def __eq__(self, other):
+        if self.is_infinity and other.is_infinity:
+            return True
+        return self.x == other.x and self.y == other.y
+
+    def __add__(self, other):
+        if self.is_infinity:
+            return other
+        if other.is_infinity:
+            return self
+
+        p = self.curve.p
+        A = self.curve.A
+        B = self.curve.B
+
+        # P + (-P) = Infinity
+        if self.x == other.x and (self.y + other.y) % p == 0:
+            return Point(self.curve, is_infinity=True)
+
+        # Montgomery Doubling Formula
+        if self == other:
+            num = (3 * self.x**2 + 2 * A * self.x + 1) % p
+            den = (2 * B * self.y) % p
+            slope = (num * pow(den, -1, p)) % p
+        # Montgomery Addition Formula
+        else:
+            num = (other.y - self.y) % p
+            den = (other.x - self.x) % p
+            slope = (num * pow(den, -1, p)) % p
+
+        # Montgomery Coordinate Updates
+        x3 = (B * slope**2 - A - self.x - other.x) % p
+        y3 = (slope * (self.x - x3) - self.y) % p
+
+        return Point(self.curve, x3, y3)
+
+    def __mul__(self, n: int):
+        if n == 0:
+            return Point(self.curve, is_infinity=True)
+        if n == 1:
+            return self
+
+        R0, R1 = self, self + self
+        check_bin = bin(n)[2:]
+        for bit in check_bin[1:]:
+            if bit == '0':
+                R1 = R0 + R1
+                R0 = R0 + R0
+            else:
+                R0 = R0 + R1
+                R1 = R1 + R1
+        return R0
+
+    def __rmul__(self, n: int):
+        return self.__mul__(n)
+
+
+if __name__ == "__main__":
+    A = 486662
+    B = 1
+    p = 2**255 - 19
+    curve = MontgomeryECC(A, B, p)
+
+    X = 9
+    rhs = (X**3 + A * (X**2) + X) % p
+
+    # p = 5 mod 8 square root formula
+    Gy = pow(rhs, (p + 3) // 8, p)
+    if pow(Gy, 2, p) != rhs:
+        Gy = (Gy * pow(2, (p - 1) // 4, p)) % p
+
+    G = Point(curve, X, Gy)
+    k = 0x1337c0decafe
+    Q = G * k
+
+    print(Q)
