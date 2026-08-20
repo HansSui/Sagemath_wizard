@@ -171,24 +171,3 @@ class Point:
 
     def __rmul__(self, n: int):
         return self.__mul__(n)
-
-
-if __name__ == "__main__":
-    A = 486662
-    B = 1
-    p = 2**255 - 19
-    curve = MontgomeryECC(A, B, p)
-
-    X = 9
-    rhs = (X**3 + A * (X**2) + X) % p
-
-    # p = 5 mod 8 square root formula
-    Gy = pow(rhs, (p + 3) // 8, p)
-    if pow(Gy, 2, p) != rhs:
-        Gy = (Gy * pow(2, (p - 1) // 4, p)) % p
-
-    G = Point(curve, X, Gy)
-    k = 0x1337c0decafe
-    Q = G * k
-
-    print(Q)
