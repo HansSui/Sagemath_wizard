@@ -91,7 +91,7 @@ def Tonelli_Shank(a,p):
     M,e = p-1, 0
     while M % 2 ==0: 
         e+=1
-        M/=2
+        M//=2
     q= M
     y = pow(n,q,p)
     r = e
