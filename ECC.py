@@ -2,6 +2,7 @@ from hashlib import sha1
 from sage.all import *
 from NumTheory import Tonelli_Shank
 from Crypto.Cipher import AES
+from NumTheory import CRT
 from Crypto.Util.Padding import pad, unpad
 import hashlib
 
@@ -49,7 +50,10 @@ class Point:
 
     def __str__(self):
         return "Point(Infinity)" if self.is_infinity else f"Point({self.x}, {self.y})"
-
+    def __neg__(self):
+        if self.is_infinity == True: return self
+        p = self.curve.p
+        return Point(self.curve, self.x,(-self.y)% self.curve.p)
     def __eq__(self, other):
         if self.is_infinity and other.is_infinity:
             return True
@@ -82,6 +86,8 @@ class Point:
         y3 = (slope * (self.x - x3) - self.y) % p
 
         return Point(self.curve, x3, y3)
+    def __sub__(self, other):
+        return self + (-other)
     def __mul__(self, n):
         if n ==0:
             return Point(self.curve, is_infinity=True)
@@ -120,7 +126,10 @@ class Point:
         if self.is_infinity and other.is_infinity:
             return True
         return self.x == other.x and self.y == other.y
-
+    def __neg__(self):
+        if self.is_infinity == True: return self
+        p = self.curve.p
+        return Point(self.curve, self.x,(-self.y)% self.curve.p)
     def __add__(self, other):
         if self.is_infinity:
             return other
@@ -151,13 +160,14 @@ class Point:
         y3 = (slope * (self.x - x3) - self.y) % p
 
         return Point(self.curve, x3, y3)
-
+    def __sub__(self, other):
+        return self + (-other)
     def __mul__(self, n: int):
         if n == 0:
             return Point(self.curve, is_infinity=True)
         if n == 1:
             return self
-
+        
         R0, R1 = self, self + self
         check_bin = bin(n)[2:]
         for bit in check_bin[1:]:
@@ -168,6 +178,57 @@ class Point:
                 R0 = R0 + R1
                 R1 = R1 + R1
         return R0
-
+    
     def __rmul__(self, n: int):
         return self.__mul__(n)
+    
+def FindOrder(A: Point)->int:
+    if A.is_infinity == True: return 1 
+    p = A.curve.p
+    a = A.curve.A
+    b = A.curve.B
+    F = GF(p)
+    if A.curve == "ECC":
+        E = EllipticCurve(F,[a,b])
+        P_sage = E(F(A.x),F(A.y))
+    if A.curve =="Montgomery":
+        E = EllipticCurve(F,[0, a/b, 0, 1/(b**2),0])
+        P_sage = E(F(A.x), F(A.y/b))
+    return int(P_sage.order())  
+def BSGS_ECC(A:Point, G:Point)-> int:
+    n = FindOrder(G)
+    m = ceil(sqrt(n))
+    short_jump = {}
+    for j in range(m):
+        S = j*G
+        short_jump[S] = j
+    R = m*G
+    curr = A
+    for i in range(m):
+        if curr in short_jump:
+            j = short_jump[curr]
+            return (i*m + j)%n
+        curr = curr - R
+
+def SolveSubGroup(P: Point,Q:Point,p:int,e:int,n:int):
+    P_base = (n//p)*P
+    gamma = (n//(p**e))*P
+    k_sub = 0
+    for j in range(e):
+        scaled_point = Q - (k_sub*gamma)
+        H = (n//(p**(j+1)))*scaled_point
+        z = BSGS_ECC(H,P_base)
+        k_sub = k_sub + z*(p**j)
+    return k_sub
+def Pohlig_hellman_ECC(Q:Point, P:Point)-> int:
+    n = FindOrder(P)
+    N = factor(n)
+    Remainder = []
+    moduli = []
+    for i, j in N:
+        modulus = i**j
+        k_i = SolveSubGroup(P,Q,i,j,n)
+        Remainder.append(k_i)
+        moduli.append(modulus)
+    k = CRT(Remainder, moduli)
+    return k% n
