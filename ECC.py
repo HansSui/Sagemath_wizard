@@ -3,6 +3,7 @@ from sage.all import *
 from NumTheory import Tonelli_Shank
 from Crypto.Cipher import AES
 from NumTheory import CRT
+from CS_function import Floyd_cycle
 from Crypto.Util.Padding import pad, unpad
 import hashlib
 
@@ -232,3 +233,23 @@ def Pohlig_hellman_ECC(Q:Point, P:Point)-> int:
         moduli.append(modulus)
     k = CRT(Remainder, moduli)
     return k% n
+def Pollard_Rho_ECC(A:Point, G:Point)->int:
+    n = FindOrder(G)
+    def f(state):
+        X,k,l = state
+        subnet = X.x%3
+        if subnet == 0:
+            return (X + A, k , (l+1)%n)
+        elif subnet ==1:
+            return (X+X, (2*k)%n, (2*l)%n)
+        else:
+            return (X + G, (k + 1) % n, l)
+    X0 = (G,1,0)
+    (X, k, l), (X_Prime, k_prime, l_prime) = Floyd_cycle(f, X0)
+    delta_l = (l_prime - l) % n
+    delta_k = (k - k_prime) % n
+    if math.gcd(delta_l, n) == 1:
+        return (delta_k * pow(delta_l, -1, n)) % n
+    else:
+        return None
+        

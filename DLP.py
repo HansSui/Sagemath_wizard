@@ -1,7 +1,7 @@
 
 from sage.all import *
 from math import isqrt
-
+from CS_function import Floyd_cycle
 def BSGS(g, h, p):
     F = GF(p)
     h= F(h)
@@ -48,5 +48,25 @@ def Pohlig_hellman(g,h,p):
         Moduli.append(q_i)
     x= CRT(Remainder, Moduli)
     return x%SubFactor
-
- 
+def Pollard_rho(g,h,p):
+    n = multiplicative_order(g)
+    x,k,l = 1,0,0
+    x_p, k_p, l_p = x,k,l
+    def f(state):
+        x,k,l = state
+        subnet = x%3
+        if subnet == 0:
+            return ((x*h)% p, k , (l+1)%n)
+        elif subnet ==1:
+            return ((x*x)%p, (2*k)%n, (2*l)%n)
+        else:
+            return ((x*g)%p,(k+1)%n,l)
+    x0 = (1,0,0)
+    (x, k, l), (x_prime, k_prime, l_prime) = Floyd_cycle(f, x0)
+    delta_l = (l_prime - l) % n
+    delta_k = (k - k_prime) % n
+    if math.gcd(delta_l, n) == 1:
+        return (delta_k * pow(delta_l, -1, n)) % n
+    else:
+        return None
+        
