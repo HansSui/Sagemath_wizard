@@ -8,7 +8,7 @@ def GCD(a, b):
 
 def GCD_binary(a,b):
     g =1
-    while a%2 ==0 & b%2 ==0:
+    while a%2 ==0 and b%2 ==0:
         a//=2
         b//=2
         g*=2
@@ -16,7 +16,7 @@ def GCD_binary(a,b):
         while a%2 ==0: a//=2
         while b%2 ==0: b//=2
         if a>= b: a = (a-b)//2
-        else: b = (b-a)//2
+        else: a, b = (b - a) // 2, a
     return g*b
 def extended_euclid(a,b):
     s, old_s,t,old_t,r, old_r = 0,1,1,0,b,a
@@ -129,3 +129,17 @@ def isPrime(n: int):
 def generate_B_list(B:int):
     return list(primes(B+1))
 
+def test_convergent(k:int, d:int,e:int,N:int)->bool:
+    if (e*d -1)%k != 0:
+        return False
+    phi = (e*d -1)//k
+    s = N-phi +1
+    discriminant = s*s - 4*N
+    if discriminant <0: return False
+    sqrt_d = math.isqrt(discriminant)
+    if sqrt_d* sqrt_d != discriminant: return False
+    if (s+ sqrt_d)%2 !=0:
+        return False
+    p = (s+sqrt_d) //2
+    q = (s-sqrt_d)//2
+    return p*q == N and p> 1 and q>1

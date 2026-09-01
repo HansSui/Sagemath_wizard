@@ -69,4 +69,4 @@ def Pollard_rho(g,h,p):
         return (delta_k * pow(delta_l, -1, n)) % n
     else:
         return None
-        
+

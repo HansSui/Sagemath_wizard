@@ -1,12 +1,7 @@
 from sage.all import *
-from NumTheory import GCD_binary
+from NumTheory import GCD_binary, test_convergent
 #RSA function
-def RSA(factors,e,ct,N): #general function
-    totient =1
-    
-    for i,j in factors:
-        temp = i**(j-1)*i -1
-        value+= temp
+def RSA(totient,e,ct,N): #general function
     #totient
     d= pow(e,-1,totient)
     plaintext = pow(ct,d,N)
@@ -21,29 +16,16 @@ def Hastad_broadcast(List_N, e,List_ct):
     return Integer(h).nth_root(e,truncate_mode = True)
 
 def wiener(e, n):
-    # Convert e/n into a continued fraction
-    cf = continued_fraction(e/n)
-    convergents = cf.convergents()
-    for kd in convergents:
-        k = kd.numerator()
-        d = kd.denominator()
-        # Check if k and d meet the requirements
-        if k == 0 or d%2 == 0 or e*d % k != 1:
+    coef = continued_fraction(e/n)
+    conv = coef.convergents()
+    for frac in conv:
+        k = frac.numerator()
+        d = frac.denominator()
+        if k ==0:
             continue
-        phi = (e*d - 1)/k
-        # Create the polynomial
-        x = PolynomialRing(RationalField(), 'x').gen()
-        f = x^2 - (n-phi+1)*x + n
-        roots = f.roots()
-        # Check if polynomial as two roots
-        if len(roots) != 2:
-            continue
-        # Check if roots of the polynomial are p and q
-        p,q = int(roots[0][0]), int(roots[1][0])
-        if p*q == n:
+        if test_convergent(k,d,e,n):
             return d
-    return None
-
+            
 #factor
 def Pollard_p(N: int, B:int):
     a =2 
@@ -56,4 +38,33 @@ def Pollard_p(N: int, B:int):
             break
     if p ==1: ValueError("Increase the bound")
     return p, N//p
+def d_small(N:int,e:int,d:int):
+    k = d * e - 1
+    if k % 2 != 0:
+        return None
 
+    t = k
+    s = 0
+    while t % 2 == 0:
+        t //= 2
+        s += 1
+
+    primes_base = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
+    for g in primes_base:
+        x = pow(g, t, N)
+        if x == 1 or x == N - 1:
+            continue
+
+        for _ in range(s):
+            y = pow(x, 2, N)
+            if y == 1:
+                p = GCD_binary(x - 1, N)
+                if 1 < p < N:
+                    q = N // p
+                    return p, q
+                break
+            if y == N - 1:
+                break
+            x = y
+
+    return None
