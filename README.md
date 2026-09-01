@@ -23,7 +23,7 @@ Ensure you have [Conda](https://docs.conda.io/en/latest/) installed, then create
 
 ```bash
 # Clone the repository
-git clone [https://github.com/HansSui/sagemath_wizard.git](https://github.com/HansSui/sagemath_wizard.git)
+git clone [https://github.com/HansSui/Sagemath_wizard.git](https://github.com/HansSui/Sagemath_wizard.git)
 cd sagemath_wizard
 
 # Create and activate Conda environment
