@@ -1,4 +1,5 @@
 from sage.all import *
+from NumTheory import GCD_binary
 #RSA function
 def RSA(factors,e,ct,N): #general function
     totient =1
@@ -42,3 +43,17 @@ def wiener(e, n):
         if p*q == n:
             return d
     return None
+
+#factor
+def Pollard_p(N: int, B:int):
+    a =2 
+    p =1
+    for j in range(2,B):
+        a = pow(a,j,N)
+        d = GCD_binary(a-1,N)
+        if 1 < d <N:
+            p = d 
+            break
+    if p ==1: ValueError("Increase the bound")
+    return p, N//p
+

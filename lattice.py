@@ -146,6 +146,4 @@ class Matrix:
         ortho_basis.append(u)
 
         return Matrix(ortho_basis)
-
-
-
+    

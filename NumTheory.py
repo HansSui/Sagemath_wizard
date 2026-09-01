@@ -6,12 +6,6 @@ def GCD(a, b):
         a,b = b,a%b
     return a
 
-def isPrime(h):
-    if h%2 ==0: return 0
-    if h < 2: return 0
-    for i in range(3,isqrt(h),2):
-        if h% i ==0: return 0
-    return 1
 def GCD_binary(a,b):
     g =1
     while a%2 ==0 & b%2 ==0:
@@ -125,3 +119,13 @@ def Jacobi_Sympol(a,b):
         if b ==1: return j
         return 0
     
+def isPrime(n: int):
+    if (n%2 ==0): return 0
+    if (n< 1): return 0
+    for i in range(3,isqrt(n),2):
+        if (n% i ==0): return 0
+    return 1
+
+def generate_B_list(B:int):
+    return list(primes(B+1))
+
