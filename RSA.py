@@ -12,9 +12,18 @@ def Small_e(N,e,ct):
     return plaintext
 
 def Hastad_broadcast(List_N, e,List_ct):
-    h = crt(List_ct, List_N)
-    return Integer(h).nth_root(e,truncate_mode = True)
-
+    if len(List_N) < e or len(List_ct) < e:
+        raise ValueError(f"Cần ít nhất {e} bản mã và modulo để thực hiện Håstad attack (hiện có {len(List_N)}).")
+    sub_N = List_N[:e]
+    sub_ct = List_ct[:e]
+    h = crt(sub_ct, sub_N)
+    m, isexact = Integer(h).nth_root(e)
+    if isexact:
+        return int(m)
+    m_floor = Integer(h).nth_root(e, truncate_mode=1)
+    if pow(m_floor, e, sub_N[0]) == sub_ct[0]:
+        return int(m_floor)
+    return None
 def wiener(e, n):
     coef = continued_fraction(e/n)
     conv = coef.convergents()

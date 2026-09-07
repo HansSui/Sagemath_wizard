@@ -143,3 +143,21 @@ def test_convergent(k:int, d:int,e:int,N:int)->bool:
     p = (s+sqrt_d) //2
     q = (s-sqrt_d)//2
     return p*q == N and p> 1 and q>1
+
+def Miller_Rabin_Test(N:int, k:int)->bool:
+    s =0
+    temp_N = N-1
+    while temp_N%2 ==0:
+        temp_N//=2
+        s+=1
+    d =temp_N
+    for i in range(k):
+        a=2
+        x = pow(a,d,N)
+        for i in range(s):
+            y = pow(x,2,N)
+            if y ==1 and x !=1: return 0
+            x =y
+        if y!= 1:
+            return 0
+    return 1

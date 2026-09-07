@@ -121,10 +121,6 @@ class Matrix:
                     det*= self.m[i].v[j]
         return det
     def Gram_Schmidt(self, normalize=False):
-        """Computes orthogonal (or orthonormal) basis vectors.
-
-        Formula: u_i = v_i - sum_{j < i} ( (v_i . u_j) / (u_j . u_j) ) * u_j
-        """
         ortho_basis = []
 
         for v in self.m:
