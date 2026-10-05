@@ -73,5 +73,3 @@ class Challenge():
             return {"error": "Decoding fail"}
 
 
-import builtins; builtins.Challenge = Challenge # hack to enable challenge to be run locally, see https://cryptohack.org/faq/#listener
-listener.start_server(port=13381)

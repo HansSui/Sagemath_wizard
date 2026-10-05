@@ -1,145 +1,124 @@
 from math import sqrt
+from sage.all import *
+def dotProduct(a:vector, b:vector) -> int:
+    return sum(i*j for i, j in zip(a,b))
+def Calculate_Basis(a:vector) -> float:
+    return sqrt(sum(i*i for i in a))
+def Gaussian_Elimination(a:Matrix)-> Matrix:
+    a = Matrix(a)
+    min = a[0][0]
+    position = 0
 
-class Vector:
-    def __init__(self, v):
-        self.v = v
-    def __str__(self):
-        return str(self.v)
-    def __add__(self,other):
-        value =[]
-        for i,j in zip(self.v, other.v):
-            value.append(i+j)
-        return Vector(value)
-    def __sub__(self,other):
-        value = []
-        for i,j in zip(self.v,other.v):
-            value.append(i-j)
-        return Vector(value)
-    def calculate_basis(self):
-        value =0
-        for i in self.v:
-            value += i*i
-        return sqrt(value)
-    def dot_product(self,v2):
-        value =0
-        for i,j in zip(self.v,v2.v):
-            value+= i*j
-        return value
+    for i in range(0,a.nrows()):
+        if min > a[i][0]:
+            min = a[i][0]
+            position = i
 
-class Matrix:
-    def __init__(self,m):
-        if isinstance(m[0],Vector):
-            self.m = m
-        else:
-            self.m = []
-            for i in m:
-                self.m.append(Vector(i))
-    def __str__(self):
-        return str([i.v for i in self.m])
-    def __add__(self,other):
-        value = []
-        for i,j in zip(self.m, other.m):
-            value.append(i+j)
-        return Matrix(value)
-    def __sub__(self,other):
-        value = []
-        for i,j in zip(self.m, other.m):
-            value.append(i-j)
-        return Matrix(value)
-    def Transpose(self):
-        value = []
-        for i in range(len(self.m[0].v)):
-            temp = []
-            for j in range(len(self.m)):
-                temp.append(self.m[j].v[i])
-            value.append(Vector(temp))
-        return Matrix(value)
-    def __mul__(self,other):
-        if isinstance(other,int):
-            value = []
-            for i in self.m:
-                temp =[]
-                for j in i.v:
-                    temp.append(j * other)
-                value.append(Vector(temp))
-            return Matrix(value)
+    swap_count = 0
 
-        m1 = len(self.m)
-        n1 = len(self.m[0].v)
-        m2 = len(other.m)
-        if (n1 != m2):
-            raise ValueError("Matrix can't be multiplied")
-        H = other.Transpose()
-        value = []
-        for i in range(m1):
-            temp = []
-            for j in range(len(H.m)):
-                temp.append(self.m[i].dot_product(H.m[j]))
-            value.append(Vector(temp))
-        return Matrix(value)
-    def Lattice_Reduction(self,delta= 0.75):
-        reduced = self.LLL(delta)
-        self.m = reduced.m
-        return self
-    def Gaussian_elimination(self):
-        m = len(self.m)
-        n = len(self.m[0].v)
+    if position != 0:
+        a[0], a[position] = a[position], a[0]
+        swap_count += 1
 
-        pivot_row = 0
-        for j in range(n):
-            if pivot_row >= m:
-                break
+    pivot = 0
+    move = 1
 
-            # 1. Find pivot row with largest value in column j
-            max_row = pivot_row
-            for i in range(pivot_row + 1, m):
-                if abs(self.m[i].v[j]) > abs(self.m[max_row].v[j]):
-                    max_row = i
+    while (pivot < a.ncols() and move < a.nrows()):
 
-            # If column has only zeros, move to next column
-            if abs(self.m[max_row].v[j]) < 1e-12:
+        if a[pivot][pivot] == 0:
+            found = False
+
+            for j in range(move, a.nrows()):
+                if a[j][pivot] != 0:
+                    a[pivot], a[j] = a[j], a[pivot]
+                    swap_count += 1
+                    found = True
+                    break
+
+            if not found:
+                pivot += 1
                 continue
 
-            # 2. Swap current row with best pivot row
-            self.m[pivot_row], self.m[max_row] = self.m[max_row], self.m[pivot_row]
+        for i in range(move, a.nrows()):
+            if a[i][pivot] == 0:
+                continue
 
-            # 3. Eliminate entries below the pivot row
-            for i in range(pivot_row + 1, m):
-                if abs(self.m[i].v[j]) > 1e-12:
-                    factor = self.m[i].v[j] / self.m[pivot_row].v[j]
-                    self.m[i] = self.m[i] - (self.m[pivot_row] * factor)
-                    self.m[i].v[j] = 0.0  # Clean floating-point artifacts
+            a[i] = a[i] - (a[i][pivot] / a[pivot][pivot]) * a[pivot]
 
-            pivot_row += 1
-        return self
-    def calculate_det(self):
-        self.Gaussian_elimination()
-        det =1
-        for i in range(len(self.m)):
-            for j in range(len(self.m[i].v)):
-                if i==j:
-                    det*= self.m[i].v[j]
-        return det
-    def Gram_Schmidt(self, normalize=False):
-        ortho_basis = []
+        pivot += 1
+        move += 1
 
-        for v in self.m:
-        # Start with a copy of current vector
-            u = Vector(list(v.v))
+    return a, swap_count
 
-        # Subtract projections onto all previously calculated basis vectors
-            for u_prev in ortho_basis:
-                denom = u_prev.dot_product(u_prev)
-                if denom > 1e-12:  # Avoid division by zero
-                    mu = v.dot_product(u_prev) / denom
-                    u = u - (u_prev * mu)
+def determinant(a:Matrix)-> float:
+    a,count = Gaussian_Elimination(a)
+    value = 1
+    for i in range(a.nrows()):
+        for j in range(a.ncols()):
+            if (i==j):
+                value *= a[i][j]
+    if count % 2 == 1:
+        value = -value
+    return value
+
+def invert_matrix(a:Matrix) -> Matrix:
+    h = determinant(a)
+
+    if h == 0:
+        raise ValueError("Matrix must be invertible")
+
+    n = a.nrows()
+
+    identity = matrix.identity(a.base_ring(), n)
+    a = a.augment(identity)
+
+    pivot = 0
+
+    while pivot < n:
+
+        if a[pivot][pivot] == 0:
+            for j in range(pivot + 1, n):
+                if a[j][pivot] != 0:
+                    a[pivot], a[j] = a[j], a[pivot]
+                    break
+
+        a[pivot] = a[pivot] / a[pivot][pivot]
+
+        for i in range(n):
+            if i == pivot:
+                continue
+
+            if a[i][pivot] == 0:
+                continue
+
+            a[i] = a[i] - a[i][pivot] * a[pivot]
+
+        pivot += 1
+
+    return a[:, n:]
+
+def Gram_Schmidt(A: Matrix, normalize=False):
+
+    A = Matrix(A)
+    vector_base = []
+
+    vector_base.append(A[0])
+
+    for i in range(1, A.nrows()):
+
+        current = A[i]
+
+        for j in range(i-1, -1, -1):
+
+            muy = (dotProduct(current, vector_base[j]) /
+                   dotProduct(vector_base[j], vector_base[j])) * vector_base[j]
+
+            current -= muy
 
         if normalize:
-            norm = u.calculate_basis()
-            if norm > 1e-12:
-                u = u * (1.0 / norm)
+            current = current / current.norm()
 
-        ortho_basis.append(u)
+        vector_base.append(current)
 
-        return Matrix(ortho_basis)
-    
+    return vector_base
+
