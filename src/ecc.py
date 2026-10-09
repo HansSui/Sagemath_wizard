@@ -1,9 +1,8 @@
 from hashlib import sha1
 from sage.all import *
-from NumTheory import Tonelli_Shank
+from src.num_theory import Tonelli_Shank, CRT
 from Crypto.Cipher import AES
-from NumTheory import CRT
-from CS_function import Floyd_cycle
+from src.cs_function import Floyd_cycle
 from Crypto.Util.Padding import pad, unpad
 import hashlib
 

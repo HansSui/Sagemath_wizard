@@ -1,7 +1,7 @@
 
 from sage.all import *
 from math import isqrt
-from CS_function import Floyd_cycle
+from src.cs_function import Floyd_cycle
 def BSGS(g, h, p):
     F = GF(p)
     h= F(h)

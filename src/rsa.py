@@ -1,5 +1,5 @@
 from sage.all import *
-from NumTheory import GCD_binary, test_convergent
+from src.num_theory import GCD_binary, test_convergent
 #RSA function
 def RSA(totient,e,ct,N): #general function
     #totient
