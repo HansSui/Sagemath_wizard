@@ -28,4 +28,4 @@ def Floyd_cycle(f, x0):
     while tortoise != hare:
         tortoise= f(tortoise)
         hare = f(f(hare))
-    return tortoise. hare
+    return tortoise, hare

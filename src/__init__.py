@@ -22,10 +22,7 @@ from .ecc import (
     decrypt_flag
 )
 from .rsa import RSA, Small_e, Hastad_broadcast, wiener, Pollard_p, d_small
-from .lattice import (
-    dotProduct, Calculate_Basis, Gram_Schmidt,
-    Gaussian_Elimination, determinant, invert_matrix
-)
+from .lattice import dotProduct, Calculate_Basis, Gram_Schmidt
 from .cs_function import is_pkcs7_padded, decrypt_flag as cs_decrypt_flag, Floyd_cycle
 
 __all__ = [
@@ -43,7 +40,6 @@ __all__ = [
     'RSA', 'Small_e', 'Hastad_broadcast', 'wiener', 'Pollard_p', 'd_small',
     # lattice
     'dotProduct', 'Calculate_Basis', 'Gram_Schmidt',
-    'Gaussian_Elimination', 'determinant', 'invert_matrix',
     # cs_function
     'is_pkcs7_padded', 'cs_decrypt_flag', 'Floyd_cycle',
 ]

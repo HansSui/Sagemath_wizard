@@ -1,53 +1,63 @@
 from sage.all import *
 from src.num_theory import GCD_binary, test_convergent
-#RSA function
-def RSA(totient,e,ct,N): #general function
-    #totient
-    d= pow(e,-1,totient)
-    plaintext = pow(ct,d,N)
+from math import isqrt
+from sage.all import Rational
+
+
+def RSA(totient, e, ct, N):
+    d = pow(e, -1, totient)
+    plaintext = pow(ct, d, N)
     return plaintext
 
-def Small_e(N,e,ct):
-    plaintext =Integer(ct).nth_root(e, truncate_mode = True)
+
+def Small_e(N, e, ct):
+    plaintext = Integer(ct).nth_root(e, truncate_mode=True)[0]
     return plaintext
 
-def Hastad_broadcast(List_N, e,List_ct):
+
+def Hastad_broadcast(List_N, e, List_ct):
     if len(List_N) < e or len(List_ct) < e:
-        raise ValueError(f"Cần ít nhất {e} bản mã và modulo để thực hiện Håstad attack (hiện có {len(List_N)}).")
+        raise ValueError(f"Need at least {e} ciphertexts and moduli for Håstad attack (got {len(List_N)}).")
     sub_N = List_N[:e]
     sub_ct = List_ct[:e]
     h = crt(sub_ct, sub_N)
-    m, isexact = Integer(h).nth_root(e)
-    if isexact:
+    m, is_exact = Integer(h).nth_root(e, truncate_mode=True)
+    if is_exact:
         return int(m)
-    m_floor = Integer(h).nth_root(e, truncate_mode=1)
+    m_floor = Integer(h).nth_root(e, truncate_mode=True)[0]
     if pow(m_floor, e, sub_N[0]) == sub_ct[0]:
         return int(m_floor)
     return None
+
+
 def wiener(e, n):
-    coef = continued_fraction(e/n)
+    coef = continued_fraction(QQ(e) / QQ(n))
     conv = coef.convergents()
     for frac in conv:
         k = frac.numerator()
         d = frac.denominator()
-        if k ==0:
+        if k == 0:
             continue
-        if test_convergent(k,d,e,n):
+        if test_convergent(k, d, e, n):
             return d
-            
-#factor
-def Pollard_p(N: int, B:int):
-    a =2 
-    p =1
-    for j in range(2,B):
-        a = pow(a,j,N)
-        d = GCD_binary(a-1,N)
-        if 1 < d <N:
-            p = d 
+    return None
+
+
+def Pollard_p(N: int, B: int):
+    a = 2
+    p = 1
+    for j in range(2, B):
+        a = pow(a, j, N)
+        d = GCD_binary(a - 1, N)
+        if 1 < d < N:
+            p = d
             break
-    if p ==1: ValueError("Increase the bound")
-    return p, N//p
-def d_small(N:int,e:int,d:int):
+    if p == 1:
+        raise ValueError("Increase the bound")
+    return p, N // p
+
+
+def d_small(N: int, e: int, d: int):
     k = d * e - 1
     if k % 2 != 0:
         return None
@@ -63,7 +73,6 @@ def d_small(N:int,e:int,d:int):
         x = pow(g, t, N)
         if x == 1 or x == N - 1:
             continue
-
         for _ in range(s):
             y = pow(x, 2, N)
             if y == 1:
@@ -75,5 +84,4 @@ def d_small(N:int,e:int,d:int):
             if y == N - 1:
                 break
             x = y
-
     return None
