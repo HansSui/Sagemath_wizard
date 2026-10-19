@@ -17,12 +17,19 @@ from .num_theory import (
 )
 from .dlp import BSGS, Pohlig_hellman, Pollard_rho
 from .ecc import (
-    ECC, Point, MontgomeryECC,
+    ECC, Point, MontgomeryECC, MontgomeryPoint,
     FindOrder, BSGS_ECC, Pohlig_hellman_ECC, Pollard_Rho_ECC,
     decrypt_flag
 )
 from .rsa import RSA, Small_e, Hastad_broadcast, wiener, Pollard_p, d_small
 from .lattice import dotProduct, Calculate_Basis, Gram_Schmidt
+from .coppersmith import (
+    coppersmith_univariate_modular,
+    coppersmith_univariate_integer,
+    coppersmith_howgrave_graham,
+    coppersmith_small_message,
+    coppersmith_small_d,
+)
 from .cs_function import is_pkcs7_padded, decrypt_flag as cs_decrypt_flag, Floyd_cycle
 
 __all__ = [
@@ -33,13 +40,17 @@ __all__ = [
     # dlp
     'BSGS', 'Pohlig_hellman', 'Pollard_rho',
     # ecc
-    'ECC', 'Point', 'MontgomeryECC',
+    'ECC', 'Point', 'MontgomeryECC', 'MontgomeryPoint',
     'FindOrder', 'BSGS_ECC', 'Pohlig_hellman_ECC', 'Pollard_Rho_ECC',
     'decrypt_flag',
     # rsa
     'RSA', 'Small_e', 'Hastad_broadcast', 'wiener', 'Pollard_p', 'd_small',
     # lattice
     'dotProduct', 'Calculate_Basis', 'Gram_Schmidt',
+# coppersmith
+    'coppersmith_univariate_modular', 'coppersmith_univariate_integer',
+    'coppersmith_howgrave_graham',
+    'coppersmith_small_message', 'coppersmith_small_d',
     # cs_function
     'is_pkcs7_padded', 'cs_decrypt_flag', 'Floyd_cycle',
 ]

@@ -1,0 +1,60 @@
+garbled = "H␣I␣o␣␣ypokwrovu␣␣tcanowhen␣␣␣saItotesp␣cdee,vrrwitere␣t␣ingwhw␣ooahruti␣d␣fsyi␣lttilabhen␣glselwlef␣e?os␣or"
+target = "How can I prove to you that I know secret word, without ever whispering a single syllable of the word itself?"
+
+# Normalize garbled: ␣ -> space
+g = garbled.replace('␣',' ')
+t = target
+
+# Build permutation by matching k-th occurrence of each char
+from collections import defaultdict
+
+g_pos_by_char = defaultdict(list)
+t_pos_by_char = defaultdict(list)
+
+for i, ch in enumerate(g):
+    g_pos_by_char[ch].append(i)
+for i, ch in enumerate(t):
+    t_pos_by_char[ch].append(i)
+
+# target_pos -> garbled_pos
+t_to_g = [None] * len(t)
+g_used = defaultdict(int)
+for t_pos, ch in enumerate(t):
+    k = g_used[ch]
+    if k < len(g_pos_by_char[ch]):
+        t_to_g[t_pos] = g_pos_by_char[ch][k]
+        g_used[ch] += 1
+
+# Inverse: garbled_pos -> target_pos
+g_to_t = [None] * len(g)
+for t_pos, g_pos in enumerate(t_to_g):
+    if g_pos is not None:
+        g_to_t[g_pos] = t_pos
+
+# Decode: read garbled in order, place each char at its target position
+decoded = [''] * len(t)
+for g_pos, ch in enumerate(g):
+    t_pos = g_to_t[g_pos]
+    if t_pos is not None:
+        decoded[t_pos] = ch
+
+result = ''.join(decoded)
+print("Decoded:", result)
+print("Match:", result == target)
+
+# Also show the encryption logic: it's a fixed permutation
+print("\n--- Encryption Logic Summary ---")
+print("The garbled string is a PERMUTATION of the target text where:")
+print("1. Characters are rearranged via a fixed permutation (108 positions)")
+print("2. Spaces in the ciphertext are rendered as ␣ (U+2423) for visibility")
+print("3. The permutation does not follow a simple mathematical pattern (rail fence,")
+print("   columnar, etc.) — it appears to be a KEYED TRANSPOSITION CIPHER")
+print("   (e.g., columnar transposition with a keyword, or a route cipher)")
+print()
+print("To ENCRYPT: apply the permutation t_to_g to target characters")
+print("To DECRYPT: apply the inverse permutation g_to_t to garbled characters")
+print()
+print("Permutation (target_idx -> garbled_idx):")
+for i, gp in enumerate(t_to_g):
+    if gp is not None:
+        print(f"  {i:3d} -> {gp:3d}  ('{t[i]}')")

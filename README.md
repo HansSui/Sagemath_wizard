@@ -6,15 +6,16 @@
 
 ## 📦 Library Architecture
 
-The library is structured into six foundational modules under `src/`:
+The library is structured into seven foundational modules under `src/`:
 
 | Module | Description |
 |--------|-------------|
-| **`num_theory.py`** | Core modular arithmetic, Extended Euclidean algorithm, Chinese Remainder Theorem (CRT), fast exponentiation, Legendre/Jacobi symbols, Miller-Rabin primality testing |
-| **`dlp.py`** | Discrete logarithm solvers: Baby-Step Giant-Step (BSGS), Pollard's ρ cycle finding (Floyd/Brent), Pohlig-Hellman subgroup decomposition |
-| **`ecc.py`** | Elliptic curve arithmetic: Short Weierstrass (`y² = x³ + ax + b`) and Montgomery curves, projective/affine point arithmetic, order calculation, constant-time scalar multiplication via Montgomery Ladder, ECDLP solvers (BSGS, Pohlig-Hellman, Pollard's ρ) |
-| **`rsa.py`** | RSA key generation, Wiener's continued fractions attack (small `d < ⅓N^0.25`), Hastad's Broadcast attack via CRT, Franklin-Reiter Related Message attack via polynomial GCD, Pollard's p-1 factoring |
-| **`lattice.py`** | Gram-Schmidt Orthogonalization (GSO), LLL reduction wrapper, Babai's Nearest Plane / Rounding for CVP, Kannan's embedding, low-density knapsack/subset-sum solvers |
+| **`num_theory.py`** | Core modular arithmetic, Extended Euclidean algorithm, Chinese Remainder Theorem (CRT), Legendre/Jacobi symbols, Miller-Rabin primality testing (delegated to Sage) |
+| **`dlp.py`** | Discrete logarithm solvers: Baby-Step Giant-Step (BSGS), Pollard's ρ, Pohlig-Hellman subgroup decomposition |
+| **`ecc.py`** | Elliptic curve arithmetic: Short Weierstrass (`y² = x³ + ax + b`) and Montgomery curves, affine point arithmetic, order calculation, Montgomery-ladder scalar multiplication, ECDLP solvers (BSGS, Pohlig-Hellman, Pollard's ρ) |
+| **`rsa.py`** | RSA helpers: direct decryption, small-exponent `e` (integer `e`-th root), Håstad broadcast via CRT, Wiener's continued-fractions attack, Pollard's p-1 factoring, factoring from a known small `d` |
+| **`lattice.py`** | Gram-Schmidt Orthogonalization (GSO) and basic vector helpers; LLL and CVP are expected to be used through SageMath's built-ins |
+| **`coppersmith.py`** | Coppersmith / Howgrave-Graham small-root attacks: univariate modular and integer roots, small-message and small-`d` (Boneh-Durfee) wrappers |
 | **`cs_function.py`** | Cryptographic utilities: PKCS#7 padding verification, AES-CBC decryption with SHA1 key derivation, Floyd cycle detection |
 
 ---
@@ -30,6 +31,7 @@ sagemath_wizard/
 │   ├── ecc.py                    # Elliptic curve arithmetic & ECDLP
 │   ├── rsa.py                    # RSA attacks & factoring
 │   ├── lattice.py                # Lattice reduction & geometry of numbers
+│   ├── coppersmith.py            # Coppersmith / Howgrave-Graham small-root attacks
 │   └── cs_function.py            # Crypto utilities & serialization
 ├── ctf/                          # Cryptohack CTF challenges (documented, not solved)
 │   ├── ecc/
@@ -75,7 +77,7 @@ from src import *
 # Number theory
 d, x, y = extended_euclid(240, 46)      # d=2, x=-9, y=47
 inv = inv_mod(3, 11)                     # 4
-crt_result = CRT([2, 3], [3, 5])         # 23
+crt_result = CRT([2, 3], [3, 5])         # 8 (least solution; 23 also satisfies)
 
 # Discrete log (DLP)
 BSGS(g, h, p)                            # Baby-Step Giant-Step
@@ -94,7 +96,7 @@ m = Hastad_broadcast([n1, n2, n3], 3, [c1, c2, c3])  # Broadcast attack
 
 # Lattice reduction
 basis = Gram_Schmidt(matrix)
-LLL_reduced = basis.LLL()                # SageMath built-in
+LLL_reduced = Matrix(basis).LLL()        # SageMath built-in
 ```
 
 ---

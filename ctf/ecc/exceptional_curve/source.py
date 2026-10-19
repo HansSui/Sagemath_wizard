@@ -5,7 +5,7 @@ from Crypto.Util.Padding import pad, unpad
 from random import randint
 import hashlib
 from sage.all import *
-from CS_function import decrypt_flag
+from src.cs_function import decrypt_flag
 FLAG = b'crypto{??????????????????????}'
 
 

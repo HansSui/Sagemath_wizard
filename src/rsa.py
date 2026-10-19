@@ -83,5 +83,5 @@ def d_small(N: int, e: int, d: int):
                 break
             if y == N - 1:
                 break
-            x = y
+            x = y 
     return None

@@ -27,7 +27,7 @@ def extended_euclid(a,b):
         old_r, r = r, old_r - q*r
         old_s, s = s, old_s - q*s
         old_t, t = t, old_t - q*t
-    d, x, y = old_r, t, s
+    d, x, y = old_r, old_s, old_t
     return d, x, y
 
 def inv_mod(a,m):
